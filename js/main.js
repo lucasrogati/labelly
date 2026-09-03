@@ -558,8 +558,54 @@ function iniciar(nome, fn){
   }
 }
 
+
+
+/* ==========================================================
+   CATEGORIAS EM DESTAQUE (tiles grandes na home)
+   Gerado automaticamente a partir dos produtos cadastrados em products.js.
+   Não substitui o filtro do catálogo — apenas leva até ele já filtrado.
+   ========================================================== */
+function montarCategoriasDestaque(){
+  const wrap = document.getElementById('categoriasDestaque');
+  if (!wrap) return;
+
+  const categorias = [...new Set(PRODUCTS.map(p => p.categoria))];
+
+  wrap.innerHTML = categorias.map((cat, i) => {
+    const produtoRef = PRODUCTS.find(p => p.categoria === cat);
+    const imagem = produtoRef ? produtoRef.imagem : '';
+    const descricao = produtoRef ? produtoRef.descricao : '';
+    return `
+      <article class="categoria-tile" data-cat="${cat}" tabindex="0" role="button" aria-label="Ver categoria ${cat}">
+        <span class="categoria-numero">${String(i + 1).padStart(2, '0')}</span>
+        ${imagem ? `<img src="${imagem}" alt="${cat}" loading="lazy">` : ''}
+        <h3>${cat}</h3>
+        <p>${descricao}</p>
+        <span class="categoria-cta">Explorar coleção →</span>
+      </article>
+    `;
+  }).join('');
+
+  function irParaCategoria(cat){
+    const filtroBtn = document.querySelector(`.filtro-btn[data-cat="${CSS.escape(cat)}"]`);
+    if (filtroBtn) filtroBtn.click();
+    document.getElementById('catalogo').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  wrap.querySelectorAll('.categoria-tile').forEach(tile => {
+    tile.addEventListener('click', () => irParaCategoria(tile.dataset.cat));
+    tile.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        irParaCategoria(tile.dataset.cat);
+      }
+    });
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   iniciar('categorias', montarCategorias);
+  iniciar('categorias em destaque', montarCategoriasDestaque);
   iniciar('busca', montarBusca);
   iniciar('grid', () => renderizarGrid());
   iniciar('footer', montarFooter);
